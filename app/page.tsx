@@ -1,5 +1,6 @@
 import Image from "next/image";
 import bg from "@/public/world-in-geographic-projection-true-colour-satellite-image-99151124-58b9cc3e5f9b58af5ca7578d.jpg";
+import Link from "next/link";
 
 export default function Home() {
     return (
@@ -14,7 +15,7 @@ export default function Home() {
             />
 
             <div className="relative z-10 text-center">
-              <h1 className="text-6xl font-bold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Test your countries knowledge</h1>
+                <Link href="/capitals"><h1 className="text-6xl font-bold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">Test your knowledge of countries </h1></Link>
             </div>
         </main>
     );

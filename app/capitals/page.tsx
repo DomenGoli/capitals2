@@ -15,8 +15,8 @@ async function Page({ searchParams }: { searchParams: SearchParamsType }) {
     const usaData = getUsaStates();
     const worldData = await getCountries()
     const params = await searchParams;
-    console.log(worldData);
 
+    
     return (
         <div className="flex flex-col items-center">
             <label className="text-4xl mb-1">Glavna mesta! (najdi pare)</label>

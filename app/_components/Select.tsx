@@ -36,8 +36,6 @@ function Select({
         router.replace(`${pathname}?${params.toString()}`)
         if(pathname==="/capitals") localStorage.setItem("storedCapitalsParams", `${params.toString()}`)
         else if(pathname==="/flags") localStorage.setItem("storedFlagsParams", `${params.toString()}`)
-        
-        console.log(pathname);
     }
 
 

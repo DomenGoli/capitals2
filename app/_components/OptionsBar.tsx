@@ -21,7 +21,6 @@ type SearchParamsType = {
 };
 
 function OptionsBar({
-    params,
     game = "capitals",
 }: {
     params: SearchParamsType;
