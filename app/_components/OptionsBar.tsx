@@ -60,7 +60,7 @@ function OptionsBar({
     // }, [searchParams])
 
     return (
-        <div className="flex gap-14 mb-2 border-1 px-4 py-1">
+        <div className="lg:flex gap-14 mb-2 border-1 px-4 py-1">
             <Select value={size} name="size" text="Stevilo drzav">
                 {/* <option value={allCountriesInRegion}>All</option> */}
                 {new Array(50).fill("").map((_, i) => (

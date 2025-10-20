@@ -19,7 +19,7 @@ async function Page({ searchParams }: { searchParams: SearchParamsType }) {
     
     return (
         <div className="flex flex-col items-center">
-            <label className="text-4xl mb-1">Glavna mesta! (najdi pare)</label>
+            <label className="lg:text-4xl mb-1">Glavna mesta! (najdi pare)</label>
             <OptionsBar params={params} />
             <Game>
                 <CapitolsBoard worldData={worldData} usaData={usaData} />

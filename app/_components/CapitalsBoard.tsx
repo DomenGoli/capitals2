@@ -168,7 +168,7 @@ function CapitalsBoard({
     return (
         <Provider store={store}>
             <ScoreBar resetGame={resetGame} />
-            <div className="grid grid-cols-10 mt-5">
+            <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 gap-y-0.5">
                 {choices.map((element, i) => (
                     <ButtonChoice
                         handleClick={handleClick}

@@ -21,7 +21,7 @@ function Flag({country, flagSize="big"}:{country: CountryType | undefined; flagS
     
     
     return (
-        <div className={`relative ${flag[flagSize]} m-4`}>
+        <div className={`relative ${flag[flagSize]}  m-4`}>
             <Image
                 src={country?.flag}
                 alt={country?.country}

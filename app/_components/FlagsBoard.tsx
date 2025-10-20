@@ -107,16 +107,16 @@ function FlagsBoard({ data }: { data: [] }) {
                 
             </div> */}
             <div className="flex justify-center">
-                <div className="flex w-[360px]">
+                <div className="flex lg:w-[360px] w-0">
                     <LastCorrect country={lastCorrectGuess} />
                 </div>
                 <div>
                     <Flag country={inplayCountries.at(0)} />
                 </div>
-                <div className="w-[360px]" />
+                <div className="lg:w-[360px] w-0" />
             </div>
 
-            <div className="grid grid-cols-10">
+            <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 w-[80%] lg:w-full ml-9">
                 {choices.map((element, i) => (
                     <ButtonChoice
                         game="flags"
