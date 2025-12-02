@@ -10,8 +10,8 @@ function ScoreBar({resetGame}: {resetGame: ()=>void}) {
     // }
 
     return (
-        <div className="flex items-center gap-5">
-            <button className="border rounded-[20px] px-2 pb-1 cursor-pointer hover:border-amber-400 focus:outline-none" onClick={resetGame}>Nova igra</button>
+        <div className="flex items-center gap-5 h-[2rem]">
+            <button className="border px-2 mr-[2px] pb-1 cursor-pointer hover:mr-0 hover:border-2 hover:border-amber-400 focus:outline-none" onClick={resetGame}>Nova igra</button>
             <div className="text-[1.2rem]">Pravilno: {score}</div>
             <div className="text-[1.2rem]">Poskusi: {tries}</div>
         </div>

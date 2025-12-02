@@ -8,7 +8,7 @@ export default function Home() {
             <Image
                 src={bg}
                 fill
-                className="object-fill object-top"
+                className="object-cover lg:object-fill object-top"
                 alt="Flags map of the world"
                 placeholder="blur"
                 quality={100}

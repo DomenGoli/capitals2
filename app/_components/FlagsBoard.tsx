@@ -67,6 +67,15 @@ function FlagsBoard({ data }: { data: [] }) {
         [pathname, router]
     );
 
+
+    /**
+     * @description Initial effect, sprejme API data in filtrira glede na regio options
+     * @param {Promise<[Object]>} data - array country object
+     * @param {[Object]} usaData - array coutry object
+     * @functionCall getPlayingCountries - argument = array filtiranih country objectov
+     * @sideEffect sets countriesPool - array regijsko filtriranih country objectov, nasa data osnova s katero operiramo med instanco appa 
+     * @todo filterByRegion se uporablja tudi v CapitalsBoard.tsx -> izvozi funkcijo in jo uporabi v obeh fajlih
+     */
     useEffect(
         function () {
             function filterByRegion() {

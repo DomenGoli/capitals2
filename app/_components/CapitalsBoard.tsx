@@ -2,6 +2,7 @@
 import { Provider } from "react-redux";
 import {
     resetGameState,
+    setBulletChoice,
     setFirstChoice,
     setGameover,
     setGuess,
@@ -14,7 +15,7 @@ import ButtonChoice from "./ButtonChoice";
 import store from "../store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { shuffle } from "../_lib/helper";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ScoreBar from "./ScoreBar";
 import GameOver from "./GameOver";
 
@@ -37,8 +38,7 @@ function CapitalsBoard({
     const [choices, setChoices] = useState<string[]>([]);
     const [countries, setCoutries] = useState<CountryType[]>([]);
     const [countriesPool, setCoutriesPool] = useState<CountryType[]>([]);
-    const { firstChoice, secondChoice, guess } = useAppSelector(
-        //bulletChoice,
+    const { firstChoice, secondChoice, bulletChoice, guess } = useAppSelector(
         (store) => store.game
     );
     const dispatch = useAppDispatch();
@@ -46,31 +46,142 @@ function CapitalsBoard({
     const order = searchParams?.get("order") || "alpha";
     const size = Number(searchParams?.get("size")) || 10;
     const region = searchParams?.get("region") || "USA states";
+    const mode = searchParams?.get("mode") || "classic";
 
-    function handleClick(answer: string): void {
-        if (answer === secondChoice && guess === "correct") return; //prepreci dvoklik na pravilen rezultat
+    const refBulletArray = useRef<CountryType[]>([]);
+    const refBulletChoice = useRef<string>("");
 
+    /**
+     * @function
+     * @description procesira klik na gameBoard gumb
+     * glede na mode, 1.) Bullet mode in 2.) Classic mode
+     * @property mode - iz URL params
+     * @param {string} answer
+     */
+    function handleTileClick(answer: string): void {
+        /**
+         * @description forcamo gameover state
+         * @sideEffect redux action -> setGameOver
+         */
         dispatch(setGameover(false));
 
-        if (firstChoice && firstChoice === answer && !secondChoice) {
-            //lahko odznacis prvi izbor
-            dispatch(setFirstChoice(""));
-            return;
+        // Bullet Mode
+        if (mode === "bullet") {
+            /**
+             * @description ob prvem bullet kliku ustvari svoj refBulletArray iz countries<Object> in ga premesa(da ne gre bulletChoice)
+             * !!! bulletChoice je firstChoice, ki ga app avtomatkso random ponudi/dodeli
+             * iz refBulletArraya crpamo bulletChoice
+             * @sideEffect new refBulletArray
+             */
+            if (!secondChoice) {
+                refBulletArray.current = [...countries].sort(shuffle);
+
+                /**
+                 * @description Najde index od prvega bullet mode stringa (firstChoice), ki je bil izbran ob zacetku bullet igre v getPlayingCountries
+                 * @sideEffect odstrani najden indexed object v refBulletArrayu
+                 * @sideEffect new refBulletChoice = firstChoice (ki je bil podan ob bullet init), ta choice se bo nadlajno vsakic avtomatsko dodelio
+                 */
+                const firstRandomBulletChoiceIndex =
+                    refBulletArray.current.findIndex(
+                        (country) =>
+                            firstChoice === country.country ||
+                            firstChoice === country.capital
+                    );
+                refBulletArray.current.splice(firstRandomBulletChoiceIndex, 1);
+                refBulletChoice.current = firstChoice;
+            }
+
+            /**
+             * @description sinhronizira refBulletChoice in bulletChoice v reduxu
+             * !!! firstChoice, bulletChoice in refBulletChoice se konstanton sinhronizirajo. Vrednost se avtomatkso dodeli ob vsakem pravilnem kliku
+             * refBulletChoice je potreben za resitev stale stata
+             */
+            if (bulletChoice) {
+                refBulletChoice.current = bulletChoice;
+                dispatch(setFirstChoice(bulletChoice));
+            }
+
+            /**
+             * @description preveri rezultat, ce sta answer(nas klik) in refBulletChoice value v istem objectu
+             * @functionCall checkAnswers
+             * @sideEffect ce je checkAnswer true, odstranimo iz refBulletArraya nov object, hkrati pa iz njega random vzamemo value in ga posredujemo v redux kot naslednji bulletChoice
+             */
+            const check = checkAnswers(answer, refBulletChoice.current);
+            if (check) {
+                const nextBulletCountry = refBulletArray.current.pop();
+                dispatch(
+                    setBulletChoice(
+                        Math.floor(Math.random() * 2)
+                            ? nextBulletCountry?.country
+                            : nextBulletCountry?.capital
+                    )
+                );
+            }
         }
-        if (firstChoice && secondChoice) {
-            // case: imamo oznacena dva rdeca izbora
-            dispatch(setGuess(""));
-            dispatch(setFirstChoice(answer));
-            dispatch(setSecondChoice(""));
-        } else if (firstChoice) {
-            // case ko izbiramo drugi izbor
-            checkAnswers(answer, firstChoice);
+
+        // Classic Mode
+        else {
+            /**
+             * @description guard clause - prepreci dvoklik na pravilen rezultat
+             */
+            if (answer === secondChoice && guess === "correct") return;
+
+            /**
+             * @description forcamo gameover state
+             * @sideEffect redux action -> setGameOver
+             */
+            dispatch(setGameover(false));
+
+            /**
+             * @description lahko odznacimo prvi izbor na game boardu
+             * @sideEffect redux action -> zbrise firstChoice
+             */
+            if (firstChoice && firstChoice === answer && !secondChoice) {
+                dispatch(setFirstChoice(""));
+                return;
+            }
+
+            /**
+             * @description primer ko obstajata dva oznacena redeca gumba
+             * nov klik bo zbrisal state in oznacil nov firstChoice
+             * @sideEffect redux action -> izbrise guess, izbrise secondChoice
+             * @sideEffect redux action -> setFirstChoice - nov klik na gameBoard button
+             */
+            if (firstChoice && secondChoice) {
+                dispatch(setGuess(""));
+                dispatch(setFirstChoice(answer));
+                dispatch(setSecondChoice(""));
+            }
+
+            /**
+             * @description ko izbiramo drugi izbor
+             * @functionCall checkAnswers - args = firstChoice in nas drugi izbor
+             */
+            if (firstChoice) {
+                // case ko izbiramo drugi izbor
+                checkAnswers(answer, firstChoice);
+            }
+
+            /**
+             * @description ko izbiramo prvi izbor
+             * @sideEffect redux action -> setFirstChoice - nas izbor
+             */
+            if (!firstChoice) dispatch(setFirstChoice(answer)); // case: ni izbora
         }
-        if (!firstChoice) dispatch(setFirstChoice(answer)); // case: ni izbora
     }
 
+    /**
+     * @function
+     * @description preveri ce sta firstChoice in secondChoice values v istem objectu
+     * @param {String} answer - secondChoice
+     * @param {String} compare - firstChoice
+     * @sideEffect redux actions -> setSecondChoice, setGuess, setScore, setTries
+     * @returns true | false
+     */
     function checkAnswers(answer: string, compare: string): boolean {
         dispatch(setSecondChoice(answer));
+
+        // if(answer === compare) return false;
 
         if (firstChoice) {
             for (let i = 0; i < countries.length; i++) {
@@ -82,7 +193,7 @@ function CapitalsBoard({
                         return true;
                     } else {
                         dispatch(setGuess("wrong"));
-                        dispatch(setTries());
+                        if(answer !== compare) dispatch(setTries());
                     }
                 } else if (countries[i].capital === compare) {
                     if (countries[i].country === answer) {
@@ -92,7 +203,7 @@ function CapitalsBoard({
                         return true;
                     } else {
                         dispatch(setGuess("wrong"));
-                        dispatch(setTries());
+                        if(answer !== compare) dispatch(setTries());
                     }
                 }
             }
@@ -100,6 +211,19 @@ function CapitalsBoard({
         return false;
     }
 
+    /**
+     * @function
+     * @description filtrira po izbrani kolicini drzav,
+     * ustvari array moznosti za gameBoardButtons (drzave + mesta)
+     * razvrsti gumbe gameBoardButtons po abecedi ali random
+     * preveri ce je bulletMode in inita bulletMode
+     *
+     * @param {[Object]} countries - array regijsko filtriranih objektov
+     * @property size, order, mode - iz URL params
+     * @sideEffect sets countries - array kolicinsko filtrtiranih country objectov - nasa playing data osnova
+     * @sideEffect sets choices - array stringov (drzave + mesta) (ordered alpha ali random)
+     * @sideEffect if(bulletMode) -> redux action -> setFirstChoice - posreduje en random string iz capitalAndCountries (choices)
+     */
     const getPlayingCountries = useCallback(
         function getPlayingCountries(countries: CountryType[]) {
             //2) filter by choices size
@@ -118,27 +242,52 @@ function CapitalsBoard({
                     ? capitalsAndCoutries.sort()
                     : capitalsAndCoutries.sort(shuffle);
             setChoices(orderedCapitalsAndCoutries);
+
+            //5) Bullet mode
+            if (mode === "bullet") {
+                const randomIndex = Math.floor(
+                    Math.random() * capitalsAndCoutries.length
+                );
+                dispatch(setFirstChoice(capitalsAndCoutries[randomIndex]));
+            }
         },
-        [order, size]
+        [order, size, mode, dispatch]
     );
 
+    /**
+     * @description resetira game state
+     * @sideEffect redux action -> resetGameState
+     * @functionCall getPlayingCountries - argument = regijsko filtriran array country object, ponastavimo data osnovo appa
+     */
     function resetGame(): void {
         dispatch(resetGameState());
         getPlayingCountries(countriesPool);
     }
 
-    // Loada zadnje nastavitve v optionsBaru
+    /**
+     * @description Loada zadnje nastavitve v optionsBaru in jih vstavi v URL paramse
+     * @sideEffect set options in URL params
+     */
     useEffect(
         function () {
-            const params = localStorage.getItem("storedCapitalsParams")
+            const params = localStorage.getItem("storedCapitalsParams");
             router.replace(`${pathname}?${params}`);
         },
         [pathname, router]
     );
 
+    /**
+     * @description Initial effect, sprejme API data in filtrira glede na regio options
+     * @param {Promise<[Object]>} worldData - array country object
+     * @param {[Object]} usaData - array coutry object
+     * @functionCall getPlayingCountries - argument = array filtiranih country objectov
+     * @sideEffect sets countriesPool - array regijsko filtriranih country objectov, nasa data osnova s katero operiramo med instanco appa
+     * @todo filterByRegion se uporablja tudi v CapitalsBoard.tsx -> izvozi funkcijo in jo uporabi v obeh fajlih
+     */
     useEffect(
         function () {
-            //1) filter usaData and worldData by regioin
+            dispatch(resetGameState());
+            //1) filtrira usaData ali worldData po regiji
             function filterByRegion() {
                 if (region === "USA states") return usaData;
                 else {
@@ -162,16 +311,16 @@ function CapitalsBoard({
             setCoutriesPool(filtered);
             getPlayingCountries(filtered);
         },
-        [region, size, order, worldData, usaData, getPlayingCountries]
+        [region, size, order, worldData, usaData, getPlayingCountries, dispatch]
     );
 
     return (
         <Provider store={store}>
             <ScoreBar resetGame={resetGame} />
-            <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 gap-y-0.5">
+            <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 gap-y-1 gap-x-1">
                 {choices.map((element, i) => (
                     <ButtonChoice
-                        handleClick={handleClick}
+                        handleClick={handleTileClick}
                         element={element}
                         key={i}
                     />

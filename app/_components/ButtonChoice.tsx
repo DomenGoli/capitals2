@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../hooks";
+import { useSearchParams } from "next/navigation";
 
 function ButtonChoice({
     element,
@@ -14,13 +15,22 @@ function ButtonChoice({
 }) {
     const { firstChoice, secondChoice, bulletChoice, guess, gameover } =
         useAppSelector((store) => store.game);
-    const { mode } = useAppSelector((store) => store.settings);
+    // const { mode } = useAppSelector((store) => store.settings);
+    const searchParams = useSearchParams();
+    const mode = searchParams?.get("mode") || "classic";
     const [render, setRender] = useState<boolean>(true);
 
+
+    /**
+     * @function
+     * @property mode, guess, firstChoice, secondChoice,
+     * @sideEffect sets render, izbrise gumb, ko je guess correct
+     * @returns {String} razlicne tailwind classe, ki dolocajo barvo gumba
+     */
     function getColor() {
         if (game === "capitals") {
             if (mode === "bullet" && guess === "wrong") {
-                if (firstChoice === element) return "bg-amber-400";
+                if (firstChoice === element) return "bg-amber-300";
                 if (secondChoice === element) return "bg-[#F88379]";
             }
             if (
@@ -48,7 +58,12 @@ function ButtonChoice({
             else return "bg-stone-100";
         }
     }
-//return "bg-[#89CFF0]";
+
+
+    /**
+     * @description ko gameover postane na koncu true, vsi gumbi postanjo spet vidni, njihov render postane nazaj v true
+     * render je postal false kadar je bil guess correct, gumb nato zgine
+     */
     useEffect(
         function () {
             if (gameover) setRender(true);
@@ -60,10 +75,13 @@ function ButtonChoice({
         <div>
             {render && (
                 <button
-                    className={`${getColor()} text-stone-700 p-[0.6rem_1.2rem] font-bold rounded-2xl border-3 border-transparent cursor-pointer hover:border-amber-400`}
+                    className={`${getColor()} text-stone-700 font-bold border-3 border-transparent cursor-pointer hover:border-amber-400 w-[160px] h-[55px] overflow-y-auto`}
                     onClick={() => handleClick(element)}
                 >
+                    {/* <div className="truncate w-auto translate-x-[0%] ease-in-out duration-4000 hover:translate-x-full"> */}
+
                     {element}
+                    {/* </div> */}
                 </button>
             )}
         </div>
@@ -71,3 +89,7 @@ function ButtonChoice({
 }
 
 export default ButtonChoice;
+
+
+
+//return "bg-[#89CFF0]"; // old barva gumba

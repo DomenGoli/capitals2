@@ -98,7 +98,7 @@ function OptionsBar({
                     <option className="text-black" value={"classic"}>
                         Classic
                     </option>
-                    {/* <option className="text-black" value={"bullet"}>Bullet</option> */}
+                    <option className="text-black" value={"bullet"}>Bullet</option>
                 </Select>
             )}
         </div>
