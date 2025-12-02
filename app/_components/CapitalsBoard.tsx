@@ -140,14 +140,14 @@ function CapitalsBoard({
                 dispatch(setFirstChoice(""));
                 return;
             }
-
+            
             /**
              * @description primer ko obstajata dva oznacena redeca gumba
              * nov klik bo zbrisal state in oznacil nov firstChoice
              * @sideEffect redux action -> izbrise guess, izbrise secondChoice
              * @sideEffect redux action -> setFirstChoice - nov klik na gameBoard button
              */
-            if (firstChoice && secondChoice) {
+            else if (firstChoice && secondChoice) {
                 dispatch(setGuess(""));
                 dispatch(setFirstChoice(answer));
                 dispatch(setSecondChoice(""));
@@ -157,7 +157,7 @@ function CapitalsBoard({
              * @description ko izbiramo drugi izbor
              * @functionCall checkAnswers - args = firstChoice in nas drugi izbor
              */
-            if (firstChoice) {
+            else if (firstChoice && !secondChoice) {
                 // case ko izbiramo drugi izbor
                 checkAnswers(answer, firstChoice);
             }
@@ -166,7 +166,7 @@ function CapitalsBoard({
              * @description ko izbiramo prvi izbor
              * @sideEffect redux action -> setFirstChoice - nas izbor
              */
-            if (!firstChoice) dispatch(setFirstChoice(answer)); // case: ni izbora
+            else if (!firstChoice && !secondChoice) dispatch(setFirstChoice(answer)); // case: ni izbora
         }
     }
 
