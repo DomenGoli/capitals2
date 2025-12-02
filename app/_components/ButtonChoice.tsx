@@ -84,6 +84,9 @@ function ButtonChoice({
                     {/* </div> */}
                 </button>
             )}
+            {!render && (
+                <div className="w-[160px] h-[55px]"></div>
+            )}
         </div>
     );
 }
