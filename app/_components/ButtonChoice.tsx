@@ -84,7 +84,7 @@ function ButtonChoice({
                     {/* </div> */}
                 </button>
             )}
-            {!render && (
+            {!render && screen.width > 500 && (
                 <div className="w-[160px] h-[55px]"></div>
             )}
         </div>

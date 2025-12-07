@@ -49,13 +49,16 @@ function FlagsBoard({ data }: { data: [] }) {
             const countryNames = filtered.map(
                 (country: CountryType) => country.country
             );
+
+            if(lastCorrectGuess && countryNames.includes(lastCorrectGuess?.country)) return getInplayCountries(filteredByRegion)
+            
             const orderedCountryNames =
                 order === "alpha"
                     ? countryNames.sort()
                     : countryNames.sort(shuffle);
             setChoices(orderedCountryNames);
         },
-        [size, order]
+        [size, order, lastCorrectGuess]
     );
 
     // Loada zadnje nastavitbe v optionsBaru
@@ -104,6 +107,20 @@ function FlagsBoard({ data }: { data: [] }) {
         [getInplayCountries, data, region]
     );
 
+    function getGrid() {
+        if (screen.width > 500) {
+            if (size < 9) return "repeat(2, min-content)";
+            else if (size < 16) return "repeat(3, min-content)";
+            else if (size < 25) return "repeat(4, min-content)";
+            else if (size < 36) return "repeat(5, min-content)";
+            else if (size < 43) return "repeat(6, min-content)";
+            else if (size < 49) return "repeat(7, min-content)";
+            else if (size < 60) return "repeat(8, min-content)";
+        } else return "repeat(2, min-content)";
+    }
+
+    
+
     return (
         <div className="flex flex-col">
             {/* <div className="flex first:ml-[50%]">
@@ -125,7 +142,10 @@ function FlagsBoard({ data }: { data: [] }) {
                 <div className="lg:w-[360px] w-0" />
             </div>
 
-            <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 w-[80%] lg:w-full ml-9">
+            {/* <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 w-[80%] lg:w-full ml-9 gap-y-1"> */}
+            <div className="grid mt-5 gap-y-1 gap-x-1 justify-center"
+            style={{ gridTemplateColumns: getGrid() }}
+            >
                 {choices.map((element, i) => (
                     <ButtonChoice
                         game="flags"

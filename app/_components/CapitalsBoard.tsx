@@ -46,7 +46,7 @@ function CapitalsBoard({
     const order = searchParams?.get("order") || "alpha";
     const size = Number(searchParams?.get("size")) || 10;
     const region = searchParams?.get("region") || "USA states";
-    const mode = searchParams?.get("mode") || "classic";
+    const mode = searchParams?.get("mode") || "bullet";
 
     const refBulletArray = useRef<CountryType[]>([]);
     const refBulletChoice = useRef<string>("");
@@ -139,34 +139,29 @@ function CapitalsBoard({
             if (firstChoice && firstChoice === answer && !secondChoice) {
                 dispatch(setFirstChoice(""));
                 return;
-            }
-            
-            /**
-             * @description primer ko obstajata dva oznacena redeca gumba
-             * nov klik bo zbrisal state in oznacil nov firstChoice
-             * @sideEffect redux action -> izbrise guess, izbrise secondChoice
-             * @sideEffect redux action -> setFirstChoice - nov klik na gameBoard button
-             */
-            else if (firstChoice && secondChoice) {
+            } else if (firstChoice && secondChoice) {
+                /**
+                 * @description primer ko obstajata dva oznacena redeca gumba
+                 * nov klik bo zbrisal state in oznacil nov firstChoice
+                 * @sideEffect redux action -> izbrise guess, izbrise secondChoice
+                 * @sideEffect redux action -> setFirstChoice - nov klik na gameBoard button
+                 */
                 dispatch(setGuess(""));
                 dispatch(setFirstChoice(answer));
                 dispatch(setSecondChoice(""));
-            }
-
-            /**
-             * @description ko izbiramo drugi izbor
-             * @functionCall checkAnswers - args = firstChoice in nas drugi izbor
-             */
-            else if (firstChoice && !secondChoice) {
+            } else if (firstChoice && !secondChoice) {
+                /**
+                 * @description ko izbiramo drugi izbor
+                 * @functionCall checkAnswers - args = firstChoice in nas drugi izbor
+                 */
                 // case ko izbiramo drugi izbor
                 checkAnswers(answer, firstChoice);
-            }
-
-            /**
-             * @description ko izbiramo prvi izbor
-             * @sideEffect redux action -> setFirstChoice - nas izbor
-             */
-            else if (!firstChoice && !secondChoice) dispatch(setFirstChoice(answer)); // case: ni izbora
+            } else if (!firstChoice && !secondChoice)
+                /**
+                 * @description ko izbiramo prvi izbor
+                 * @sideEffect redux action -> setFirstChoice - nas izbor
+                 */
+                dispatch(setFirstChoice(answer)); // case: ni izbora
         }
     }
 
@@ -193,7 +188,7 @@ function CapitalsBoard({
                         return true;
                     } else {
                         dispatch(setGuess("wrong"));
-                        if(answer !== compare) dispatch(setTries());
+                        if (answer !== compare) dispatch(setTries());
                     }
                 } else if (countries[i].capital === compare) {
                     if (countries[i].country === answer) {
@@ -203,7 +198,7 @@ function CapitalsBoard({
                         return true;
                     } else {
                         dispatch(setGuess("wrong"));
-                        if(answer !== compare) dispatch(setTries());
+                        if (answer !== compare) dispatch(setTries());
                     }
                 }
             }
@@ -265,6 +260,26 @@ function CapitalsBoard({
     }
 
     /**
+     * @function
+     * @description generira stevilo stolpcev grida glede na kolicino moznosti
+     * @property size, screen.width
+     * @returns {String} for gridTemplateColumns style property
+     */
+    function getGrid() {
+        if (screen.width > 500) {
+            if (size < 5) return "repeat(2, minmax(0, 1fr))";
+            else if (size < 10) return "repeat(3, minmax(0, 1fr))";
+            else if (size < 19) return "repeat(4, minmax(0, 1fr))";
+            else if (size < 25) return "repeat(5, minmax(0, 1fr))";
+            else if (size < 31) return "repeat(6, minmax(0, 1fr))";
+            else if (size < 39) return "repeat(7, minmax(0, 1fr))";
+            else if (size < 44) return "repeat(8, minmax(0, 1fr))";
+            else if (size < 50) return "repeat(9, minmax(0, 1fr))";
+            else if (size < 60) return "repeat(10, minmax(0, 1fr))";
+        } else return "repeat(2, minmax(0, 1fr))";
+    }
+
+    /**
      * @description Loada zadnje nastavitve v optionsBaru in jih vstavi v URL paramse
      * @sideEffect set options in URL params
      */
@@ -317,7 +332,11 @@ function CapitalsBoard({
     return (
         <Provider store={store}>
             <ScoreBar resetGame={resetGame} />
-            <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 gap-y-1 gap-x-1">
+            <div
+                style={{ gridTemplateColumns: getGrid() }}
+                className="grid mt-5 gap-y-1 gap-x-1"
+            >
+                {/* <div className="grid xl:grid-cols-9 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 mt-5 gap-y-1 gap-x-1"> */}
                 {choices.map((element, i) => (
                     <ButtonChoice
                         handleClick={handleTileClick}
